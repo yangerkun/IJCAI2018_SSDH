@@ -1,5 +1,5 @@
 # IJCAI2018_SSDH
-This is the code for our IJCAI2018 paper "Semantic Structure-based Unsupervised Deep Hashing" IJCAI 2018.
+This is the code for our paper: "Semantic Structure-based Unsupervised Deep Hashing" IJCAI 2018.
 
 Author: E. Yang, C. Deng, T. Liu, W. Liu, and D. Tao.
 
