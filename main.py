@@ -77,41 +77,6 @@ def one_hot_label(single_label):
         one_hot_label[i, single_label[i][0]] = 1
     return one_hot_label
 
-def data_iterator():
-    while True:
-        idxs = np.arange(0, len(img224))
-        np.random.shuffle(idxs)
-        for batch_idx in range(0, len(img224), batch_size):
-            cur_idxs = idxs[batch_idx:batch_idx + batch_size]
-            images_batch = img224[cur_idxs]
-            if len(images_batch) < batch_size:
-                break
-            images_batch = images_batch.astype("float32")
-            yield images_batch ,cur_idxs
-
-def test_iterator():
-    while True:
-        idxs = np.arange(0, len(test_img224))
-        #np.random.shuffle(idxs)
-        for batch_idx in range(0, len(test_img224), batch_size):
-            cur_idxs = idxs[batch_idx:batch_idx + batch_size]
-            images_batch = test_img224[cur_idxs]
-            if len(images_batch) < batch_size:
-                break
-            images_batch = images_batch.astype("float32")
-            yield images_batch ,cur_idxs
-
-def dataset_iterator():
-    while True:
-        idxs = np.arange(0, len(dataset_img224))
-        #np.random.shuffle(idxs)
-        for batch_idx in range(0, len(dataset_img224), batch_size):
-            cur_idxs = idxs[batch_idx:batch_idx + batch_size]
-            images_batch = dataset_img224[cur_idxs]
-            if len(images_batch) < batch_size:
-                break
-            images_batch = images_batch.astype("float32")
-            yield images_batch ,cur_idxs
 
 def loss(z_x_meanx1,ss_ ):
     pair_loss=tf.reduce_mean(tf.multiply(tf.abs(ss_),(tf.square(tf.multiply(1.0/hidden_size,tf.matmul(z_x_meanx1, tf.transpose(z_x_meanx1)))- ss_))))
