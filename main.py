@@ -206,8 +206,9 @@ fake_left = 2*max_value - right
 left_all = np.concatenate([left, fake_right])
 right_all = np.concatenate([fake_left, right])
 l_mean, l_std = norm.fit(left_all)
+r_mean, r_std = norm.fit(right_all)
 S1 = ((orig_euc_dis < l_mean-2*l_std))*1.0
-S2 = ((orig_euc_dis > l_mean-l_std))*(-1.0)
+S2 = ((orig_euc_dis > r_mean+2*r_std))*(-1.0)
 S = S1 + S2
 
 # Start training/
