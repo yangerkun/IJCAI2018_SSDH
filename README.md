@@ -11,4 +11,8 @@ For example, for training dataset, all images and their labels should be given i
 
 As you can see, the first part is the image path, and the second part is the corresponding one-hot labels.
 
+after set the proper runing environment and datasets, our method can be evaluated by:
+
+python2 
+
 If your find the code usfull, please cite our paper, and if you have any questions, please feel free to contact Erkun Yang (erkunyang@gmail.com)
