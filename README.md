@@ -13,6 +13,6 @@ As you can see, the first part is the image path, and the second part is the cor
 
 after set the proper runing environment and datasets, our method can be evaluated by:
 
-python2 
+python2 main.py
 
 If your find the code usfull, please cite our paper, and if you have any questions, please feel free to contact Erkun Yang (erkunyang@gmail.com)
