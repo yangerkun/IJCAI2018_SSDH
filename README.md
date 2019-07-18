@@ -19,4 +19,4 @@ After setting the running environment and dataset information, our method can be
 python2 main.py
 ```
 
-If your find the code usfull, please cite our paper, and if you have any questions, please feel free to contact Erkun Yang (erkunyang@gmail.com)
+If your find the code usfull, you can cite our paper, and if you have any questions, please feel free to contact Erkun Yang (erkunyang@gmail.com)
