@@ -1,5 +1,6 @@
 # IJCAI2018_SSDH
 This is the code for our paper: "Semantic Structure-based Unsupervised Deep Hashing" IJCAI 2018.
+
 Author: E. Yang, C. Deng, T. Liu, W. Liu, and D. Tao.
 
 To run the code, you should download the dataset and specify the image path and labels in the corresponding txt file.
