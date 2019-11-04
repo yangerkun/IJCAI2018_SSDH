@@ -11,6 +11,7 @@ For example, for training dataset, all image path should be given in img_train.t
 >\path\to\train_img2.png 
 
 >...
+
 The corresponding labels should be indicated in label_train.txt:
 
 >0 1 0 1 0 1
