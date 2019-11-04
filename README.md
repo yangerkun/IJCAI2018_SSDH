@@ -13,9 +13,11 @@ For example, for training dataset, all image path should be given in img_train.t
 >...
 The corresponding labels should be indicated in label_train.txt:
 
-0 1 0 1 0 1
-0 1 0 1 1 0
-.......
+>0 1 0 1 0 1
+
+>0 1 0 1 1 0
+
+>.......
 
 After setting the running environment and dataset information, our method can be evaluated by:
 
