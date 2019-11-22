@@ -47,22 +47,21 @@ gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction = 1.0)
 session = tf.Session(config = tf.ConfigProto(gpu_options = gpu_options))
 
 # Define training dataset
-train_size = 5000
-test_size = 10000
-db_size = 50000
 k = 50
 config = {
-    
-    'img_tr': "cifar10/img_train.txt", 
-    'lab_tr': "cifar10/label_train.txt",
-    'img_te': "cifar10/img_test.txt",
-    'lab_te': "cifar10/label_test.txt",
-    'img_db': "cifar10/img_database.txt", 
-    'lab_db': "cifar10/label_database.txt",
-    'n_train': 5000,
-    'n_test': 10000,
-    'n_db': 50000,
-    'n_label': 10
+    'img_tr': "dataset/flickr/img_train.txt", 
+    'txt_tr': "dataset/flickr/label_train.txt", 
+    'lab_tr': "dataset/flickr/label_train.txt",
+    'img_te': "dataset/flickr/img_test.txt",
+    'txt_te': "dataset/flickr/label_test.txt",
+    'lab_te': "dataset/flickr/label_test.txt",
+    'img_db': "dataset/flickr/img_database.txt", 
+    'txt_db': "dataset/flickr/label_database.txt", 
+    'lab_db': "dataset/flickr/label_database.txt",
+    'n_train': 10000,
+    'n_test': 2000,
+    'n_db': 18015,
+    'n_label': 24
 }
 
 n_train = config['n_train']
