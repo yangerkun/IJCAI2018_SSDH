@@ -2,7 +2,6 @@ from scipy.spatial.distance import pdist ,squareform
 from scipy.stats import norm
 import random
 import tqdm
-import prettytensor as pt
 import scipy
 import h5py
 import scipy.io as sio
@@ -11,97 +10,30 @@ import numpy as np
 from ops import *
 from utils import *
 import os, sys
-sys.path.append(os.getcwd())
 import batch_data.image_data as dataset
 from my_generator import Vgg
-import sklearn.datasets
-import time
-import functools
-import locale
-locale.setlocale(locale.LC_ALL, '')
-
-def calc_map_k(qB, rB, query_L, retrieval_L, k):
-    num_query = query_L.shape[0]
-    map = 0
-    for iter in xrange(num_query):
-        gnd2 = (np.dot(query_L[iter, :], retrieval_L.transpose()) > 0).astype(np.float32)
-        hamm = calc_hammingDist(qB[iter, :], rB)
-        aaa = np.arange(0,retrieval_L.shape[0])
-        ind = np.lexsort((aaa,hamm))
-        gnd = gnd2[ind[0:k]]
-        tsum = np.sum(gnd)
-        if tsum == 0:
-            continue
-        count = np.linspace(1, tsum, tsum)
-        tindex = np.asarray(np.where(gnd == 1)) + 1.0
-        map = map + np.mean(count / (tindex))
-    map = map / num_query
-    return map
-
-def calc_map(qB, rB, query_L, retrieval_L):
-    num_query = query_L.shape[0]
-    map = 0
-    for iter in xrange(num_query):
-        gnd2 = (np.dot(query_L[iter, :], retrieval_L.transpose()) > 0).astype(np.float32)
-        hamm = calc_hammingDist(qB[iter, :], rB)
-        aaa = np.arange(0,retrieval_L.shape[0])
-        ind = np.lexsort((aaa,hamm))
-        gnd = gnd2[ind[:]]
-        tsum = np.sum(gnd)
-        if tsum == 0:
-            continue
-        count = np.linspace(1, tsum, tsum)
-
-        tindex = np.asarray(np.where(gnd == 1)) + 1.0
-        map = map + np.mean(count / (tindex))
-    map = map / num_query
-    return map
-
-def calc_hammingDist(B1, B2):
-    B1 = B1*1
-    B2 = B2*1
-    ind = B1<0.5
-    B1[ind] = -1
-    ind = B2<0.5
-    B2[ind] = -1
-    q = B2.shape[1]
-    distH = 0.5 * (q - np.dot(B1,B2.transpose()))
-    return distH
-
-def one_hot_label(single_label):
-    num_label = np.max(single_label)+1
-    num_samples = single_label.size
-    one_hot_label = np.zeros([num_samples, num_label], int)
-    for i in tqdm.tqdm(range(num_samples)):
-        one_hot_label[i, single_label[i][0]] = 1
-    return one_hot_label
 
 
-def loss(z_x_meanx1,ss_ ):
-    pair_loss=tf.reduce_mean(tf.multiply(tf.abs(ss_),(tf.square(tf.multiply(1.0/hidden_size,tf.matmul(z_x_meanx1, tf.transpose(z_x_meanx1)))- ss_))))
+def loss(batch_input,batch_label):
+    pair_loss=tf.reduce_mean(tf.multiply(tf.abs(batch_label),(tf.square(tf.multiply(1.0/hidden_size,tf.matmul(batch_input, tf.transpose(batch_input)))- batch_label))))
     return pair_loss
 
 def inference(x224):
-    with pt.defaults_scope(activation_fn=tf.nn.elu,
-                           batch_normalize=True,
-                           learned_moments_update_rate=0.0003,
-                           variance_epsilon=0.001,
-                           scale_after_normalization=True):
-        with tf.variable_scope("enc"):
-                vgg_net = Vgg('./vgg.npy', codelen=hidden_size)
-                vgg_net.build(x224, train_model)
-                z_x = vgg_net.fc9
-                fc7_features = vgg_net.relu7
-        return z_x, fc7_features
+    with tf.variable_scope("enc"):
+            vgg_net = Vgg('./vgg.npy', codelen=hidden_size)
+            vgg_net.build(x224, train_model)
+            z_x = vgg_net.fc9
+            fc7_features = vgg_net.relu7
+    return z_x, fc7_features
 
 batch_size = 24 
 hidden_size = 32
-all_input224 = tf.placeholder(tf.float32, [None, 224 ,224,3])
+input_image = tf.placeholder(tf.float32, [None, 224 ,224,3])
 train_model = tf.placeholder(tf.bool)
-s_s = tf.placeholder(tf.float32, [batch_size, batch_size])
+input_label = tf.placeholder(tf.float32, [batch_size, batch_size])
 with tf.device('/gpu:0'):
-    z_x, fc7_features = inference(all_input224)
-    pair_loss = loss(z_x, s_s)
+    z_x, fc_features = inference(all_input224)
+    pair_loss = loss(z_x, input_label)
     params = tf.trainable_variables()
     E_params = [i for i in params if 'enc' in i.name]
     lr_E = tf.placeholder(tf.float32, shape=[])
@@ -151,8 +83,6 @@ db_labels = np.zeros([n_db, n_label])
 
 num_epochs =  100
 e_learning_rate = 1e-3
-g_learning_rate = 1e-3
-d_learning_rate = 1e-3
 globa_beta_indx = 0
 num_examples = n_train
 total_batch = int(np.floor(num_examples / batch_size))
@@ -170,7 +100,7 @@ for i in range(train_batch):
         index = range(i*batch_size, n_train)
     next_batches224, batch_label = train_data.img_data(index)
     next_batches224 = np.array(next_batches224)
-    train_softcode = session.run(fc7_features, feed_dict = {all_input224: next_batches224, train_model: False})
+    train_softcode = session.run(fc_features, feed_dict = {input_image: next_batches224, train_model: False})
     train_features[index, :] = train_softcode
     train_labels[index, :] = batch_label
 _dict = {'train_features': train_features, 'train_labels': train_labels}
@@ -239,8 +169,8 @@ while epoch < pre_epochs:
              ],
             {
                 lr_E: e_current_lr,
-                all_input224: next_batches224,
-                s_s: ss_,
+                input_image: next_batches224,
+                input_label: ss_,
                 train_model: True
             }
             )
@@ -262,7 +192,7 @@ while epoch < pre_epochs:
                 index = range(i*batch_size, n_test)
             next_batches224, batch_label = test_data.img_data(index)
             next_batches224 = np.array(next_batches224)
-            test_softcode = session.run(z_x, feed_dict = {all_input224: next_batches224, train_model: False})
+            test_softcode = session.run(z_x, feed_dict = {input_image: next_batches224, train_model: False})
             test_codes[index, :] = test_softcode
             test_labels[index,:] = batch_label
         #Extract hash codes for database dataset
@@ -273,7 +203,7 @@ while epoch < pre_epochs:
                 index = range(i*batch_size, n_db)
             next_batches224, batch_label = db_data.img_data(index)
             next_batches224 = np.array(next_batches224)
-            dataset_softcode = session.run(z_x, feed_dict = {all_input224: next_batches224, train_model: False})
+            dataset_softcode = session.run(z_x, feed_dict = {input_image: next_batches224, train_model: False})
             dataset_codes[index, :] = dataset_softcode
             dataset_labels[index, :] = batch_label
         # Caculate MAP values.
