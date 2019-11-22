@@ -12,9 +12,8 @@ from ops import *
 from utils import *
 import os, sys
 sys.path.append(os.getcwd())
-import batch_data.mxnet_image_data as dataset
+import batch_data.image_data as dataset
 from my_generator import Vgg
-import numpy as np
 import sklearn.datasets
 import time
 import functools
@@ -160,6 +159,7 @@ total_batch = int(np.floor(num_examples / batch_size))
 epoch = 0     
 
 # Constructing Semantic Similarity Matrix
+# Extract Deep features
 session.run(tf.initialize_all_variables())
 pre_epochs =  10
 train_batch = int(np.ceil(1.0*n_train/batch_size))
@@ -175,6 +175,8 @@ for i in range(train_batch):
     train_labels[index, :] = batch_label
 _dict = {'train_features': train_features, 'train_labels': train_labels}
 np.save('train_feature_and_label_nuswide.npy', _dict)
+
+# Calculate cosine distance 
 euc_ = pdist(train_features, 'cosine')
 euc_dis = squareform(euc_)
 orig_euc_dis = euc_dis
@@ -183,6 +185,8 @@ margin = 1.0/100
 num = np.zeros(100)
 max_num = 0.0
 max_value = 0.0
+
+# Histogram distribution 
 for i in range(100):
     end = start+margin
     temp_matrix = (euc_dis>start)&(euc_dis<end)
@@ -205,8 +209,12 @@ fake_right = 2*max_value - left
 fake_left = 2*max_value - right 
 left_all = np.concatenate([left, fake_right])
 right_all = np.concatenate([fake_left, right])
+
+# Gaussian distribution approximation
 l_mean, l_std = norm.fit(left_all)
 r_mean, r_std = norm.fit(right_all)
+
+# Obtain fake labels
 S1 = ((orig_euc_dis < l_mean-2*l_std))*1.0
 S2 = ((orig_euc_dis > r_mean+2*r_std))*(-1.0)
 S = S1 + S2
