@@ -26,6 +26,7 @@ def inference(x224):
             fc7_features = vgg_net.relu7
     return z_x, fc7_features
 
+# Define the deep model and optimization method
 batch_size = 24 
 hidden_size = 32
 input_image = tf.placeholder(tf.float32, [None, 224 ,224,3])
@@ -39,7 +40,6 @@ with tf.device('/gpu:0'):
     lr_E = tf.placeholder(tf.float32, shape=[])
     opt_E = tf.train.AdamOptimizer(lr_E, epsilon=1.0)            
     grads_e = opt_E.compute_gradients(pair_loss, var_list=E_params)#with KL_loss,you can discard it.
-
 global_step = tf.get_variable(
     'global_step', [],
     initializer=tf.constant_initializer(0), trainable=False)
@@ -47,6 +47,7 @@ train_E = opt_E.apply_gradients(grads_e, global_step=global_step)
 gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction = 1.0)
 session = tf.Session(config = tf.ConfigProto(gpu_options = gpu_options))
 
+# Define training dataset
 train_size = 5000
 test_size = 10000
 db_size = 50000
