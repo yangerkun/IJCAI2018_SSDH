@@ -20,10 +20,21 @@ The corresponding labels should be indicated in label_train.txt:
 
 >...
 
-The pretrained VGG16 model can be downloaded in https://mega.nz/#!YU1FWJrA!O1ywiCS2IiOlUCtCpI6HTJOMrneN-Qdv3ywQP5poecM. After setting the running environment and dataset information, our method can be evaluated by:
+The pretrained VGG16 model can be downloaded in https://mega.nz/#!YU1FWJrA!O1ywiCS2IiOlUCtCpI6HTJOMrneN-Qdv3ywQP5poecM. 
+After setting the running environment and dataset information, our method can be evaluated by:
 
 ```
 python2 main.py
 ```
-
-If your find the code usfull, you can cite our paper, and if you have any questions, please feel free to contact Erkun Yang (erkunyang@gmail.com)
+# Citation
+If your find the code usfull, you can cite our paper
+```
+@inproceedings{yang2018semantic,
+  title={Semantic Structure-based Unsupervised Deep Hashing.},
+  author={Yang, Erkun and Deng, Cheng and Liu, Tongliang and Liu, Wei and Tao, Dacheng},
+  booktitle={IJCAI},
+  pages={1064--1070},
+  year={2018}
+}
+```
+If you have any questions, please feel free to contact Erkun Yang (erkunyang@gmail.com)
