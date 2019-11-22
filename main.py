@@ -47,7 +47,6 @@ gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction = 1.0)
 session = tf.Session(config = tf.ConfigProto(gpu_options = gpu_options))
 
 # Define training dataset
-k = 50
 config = {
     'img_tr': "dataset/flickr/img_train.txt", 
     'txt_tr': "dataset/flickr/label_train.txt", 
