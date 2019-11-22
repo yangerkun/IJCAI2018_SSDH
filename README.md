@@ -20,7 +20,7 @@ The corresponding labels should be indicated in label_train.txt:
 
 >.......
 
-After setting the running environment and dataset information, our method can be evaluated by:
+The pretrained VGG16 model can be downloaded in https://mega.nz/#!YU1FWJrA!O1ywiCS2IiOlUCtCpI6HTJOMrneN-Qdv3ywQP5poecM, After setting the running environment and dataset information, our method can be evaluated by:
 
 ```
 python2 main.py
