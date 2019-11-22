@@ -13,7 +13,6 @@ import os, sys
 import batch_data.image_data as dataset
 from my_generator import Vgg
 
-
 def loss(batch_input,batch_label):
     pair_loss=tf.reduce_mean(tf.multiply(tf.abs(batch_label),(tf.square(tf.multiply(1.0/hidden_size,tf.matmul(batch_input, tf.transpose(batch_input)))- batch_label))))
     return pair_loss
