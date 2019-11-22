@@ -6,99 +6,58 @@ from tensorflow.python.framework import ops
 
 from utils import *
 
-try:
-  image_summary = tf.image_summary
-  scalar_summary = tf.scalar_summary
-  histogram_summary = tf.histogram_summary
-  merge_summary = tf.merge_summary
-  SummaryWriter = tf.train.SummaryWriter
-except:
-  image_summary = tf.summary.image
-  scalar_summary = tf.summary.scalar
-  histogram_summary = tf.summary.histogram
-  merge_summary = tf.summary.merge
-  SummaryWriter = tf.summary.FileWriter
+def calc_map_k(qB, rB, query_L, retrieval_L, k):
+    num_query = query_L.shape[0]
+    map = 0
+    for iter in xrange(num_query):
+        gnd2 = (np.dot(query_L[iter, :], retrieval_L.transpose()) > 0).astype(np.float32)
+        hamm = calc_hammingDist(qB[iter, :], rB)
+        aaa = np.arange(0,retrieval_L.shape[0])
+        ind = np.lexsort((aaa,hamm))
+        gnd = gnd2[ind[0:k]]
+        tsum = np.sum(gnd)
+        if tsum == 0:
+            continue
+        count = np.linspace(1, tsum, tsum)
+        tindex = np.asarray(np.where(gnd == 1)) + 1.0
+        map = map + np.mean(count / (tindex))
+    map = map / num_query
+    return map
 
-if "concat_v2" in dir(tf):
-  def concat(tensors, axis, *args, **kwargs):
-    return tf.concat_v2(tensors, axis, *args, **kwargs)
-else:
-  def concat(tensors, axis, *args, **kwargs):
-    return tf.concat(tensors, axis, *args, **kwargs)
+def calc_map(qB, rB, query_L, retrieval_L):
+    num_query = query_L.shape[0]
+    map = 0
+    for iter in xrange(num_query):
+        gnd2 = (np.dot(query_L[iter, :], retrieval_L.transpose()) > 0).astype(np.float32)
+        hamm = calc_hammingDist(qB[iter, :], rB)
+        aaa = np.arange(0,retrieval_L.shape[0])
+        ind = np.lexsort((aaa,hamm))
+        gnd = gnd2[ind[:]]
+        tsum = np.sum(gnd)
+        if tsum == 0:
+            continue
+        count = np.linspace(1, tsum, tsum)
 
-class batch_norm(object):
-  def __init__(self, epsilon=1e-5, momentum = 0.9, name="batch_norm"):
-    with tf.variable_scope(name):
-      self.epsilon  = epsilon
-      self.momentum = momentum
-      self.name = name
+        tindex = np.asarray(np.where(gnd == 1)) + 1.0
+        map = map + np.mean(count / (tindex))
+    map = map / num_query
+    return map
 
-  def __call__(self, x, train=True):
-    return tf.contrib.layers.batch_norm(x,
-                      decay=self.momentum, 
-                      updates_collections=None,
-                      epsilon=self.epsilon,
-                      scale=True,
-                      is_training=train,
-                      scope=self.name)
+def calc_hammingDist(B1, B2):
+    B1 = B1*1
+    B2 = B2*1
+    ind = B1<0.5
+    B1[ind] = -1
+    ind = B2<0.5
+    B2[ind] = -1
+    q = B2.shape[1]
+    distH = 0.5 * (q - np.dot(B1,B2.transpose()))
+    return distH
 
-def conv_cond_concat(x, y):
-  """Concatenate conditioning vector on feature map axis."""
-  x_shapes = x.get_shape()
-  y_shapes = y.get_shape()
-  return concat([
-    x, y*tf.ones([x_shapes[0], x_shapes[1], x_shapes[2], y_shapes[3]])], 3)
-
-def conv2d(input_, output_dim, 
-       k_h=5, k_w=5, d_h=2, d_w=2, stddev=0.02,
-       padding_type = "SAME",name="conv2d"):
-  with tf.variable_scope(name):
-    w = tf.get_variable('w', [k_h, k_w, input_.get_shape()[-1], output_dim],
-              initializer=tf.truncated_normal_initializer(stddev=stddev))
-    conv = tf.nn.conv2d(input_, w, strides=[1, d_h, d_w, 1], padding=padding_type)
-
-    biases = tf.get_variable('biases', [output_dim], initializer=tf.constant_initializer(0.0))
-    conv = tf.reshape(tf.nn.bias_add(conv, biases), conv.get_shape())
-
-    return conv
-
-def deconv2d(input_, output_shape,
-       k_h=5, k_w=5, d_h=2, d_w=2, stddev=0.02,
-       name="deconv2d", with_w=False):
-  with tf.variable_scope(name):
-    # filter : [height, width, output_channels, in_channels]
-    w = tf.get_variable('w', [k_h, k_w, output_shape[-1], input_.get_shape()[-1]],
-              initializer=tf.random_normal_initializer(stddev=stddev))
-    
-    try:
-      deconv = tf.nn.conv2d_transpose(input_, w, output_shape=output_shape,
-                strides=[1, d_h, d_w, 1])
-
-    # Support for verisons of TensorFlow before 0.7.0
-    except AttributeError:
-      deconv = tf.nn.deconv2d(input_, w, output_shape=output_shape,
-                strides=[1, d_h, d_w, 1])
-
-    biases = tf.get_variable('biases', [output_shape[-1]], initializer=tf.constant_initializer(0.0))
-    deconv = tf.reshape(tf.nn.bias_add(deconv, biases), deconv.get_shape())
-
-    if with_w:
-      return deconv, w, biases
-    else:
-      return deconv
-     
-def lrelu(x, leak=0.2, name="lrelu"):
-  return tf.maximum(x, leak*x)
-
-def linear(input_, output_size, scope=None, stddev=0.02, bias_start=0.0, with_w=False):
-  shape = input_.get_shape().as_list()
-
-  with tf.variable_scope(scope or "Linear"):
-    matrix = tf.get_variable("Matrix", [shape[1], output_size], tf.float32,
-                 tf.random_normal_initializer(stddev=stddev))
-    bias = tf.get_variable("bias", [output_size],
-      initializer=tf.constant_initializer(bias_start))
-    if with_w:
-      return tf.matmul(input_, matrix) + bias, matrix, bias
-    else:
-      return tf.matmul(input_, matrix) + bias
+def one_hot_label(single_label):
+    num_label = np.max(single_label)+1
+    num_samples = single_label.size
+    one_hot_label = np.zeros([num_samples, num_label], int)
+    for i in tqdm.tqdm(range(num_samples)):
+        one_hot_label[i, single_label[i][0]] = 1
+    return one_hot_label
