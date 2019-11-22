@@ -1,26 +1,8 @@
-#
-# Licensed under the Apache License, Version 2.0 (the "License"); # you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-# ==============================================================================
-
-#"""Routine for decoding the NUS-WIDE binary file format."""
-
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
-
 import os
-import pdb
-
-from six.moves import xrange  # pylint: disable=redefined-builtin
+from six.moves import xrange  
 from scipy.misc import imread, imresize
 import cv2
 import numpy as np
@@ -44,14 +26,12 @@ class dataset(object):
         self.all_data = self.img_all_data
 
     def img_data(self, index):
-        #print 'load data'
         if self._status:
             return (self._img[index, :],  self._label[index, :])
         else:
             ret_img = []
             ret_label = []
             for i in index:
-               # print ('preprocessed:',i)
                 if self.train:
                     if not self._load[i]:
                         temp_img = imread(self.i_lines[i].strip().split()[0])
@@ -63,7 +43,6 @@ class dataset(object):
                     ret_img.append(self._img[i])
                     ret_label.append(self._label[i])
                 else:
-                    #pdb.set_trace()
                     self._label[i] = [int(j) for j in self.l_lines[i].strip().split()[:]]
                     temp_img = imread(self.i_lines[i].strip().split()[0])
                     if temp_img.shape[2]!=3:
