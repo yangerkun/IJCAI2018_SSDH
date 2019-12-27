@@ -32,7 +32,7 @@ input_image = tf.placeholder(tf.float32, [None, 224 ,224,3])
 train_model = tf.placeholder(tf.bool)
 input_label = tf.placeholder(tf.float32, [batch_size, batch_size])
 with tf.device('/gpu:0'):
-    z_x, fc_features = inference(all_input224)
+    z_x, fc_features = inference(input_image)
     pair_loss = loss(z_x, input_label)
     params = tf.trainable_variables()
     E_params = [i for i in params if 'enc' in i.name]
