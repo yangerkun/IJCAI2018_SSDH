@@ -149,7 +149,6 @@ S = S1 + S2
 
 # Start training/
 while epoch < pre_epochs:
-    iter_ = data_iterator()
     index_range = np.arange(n_train)
     np.random.shuffle(index_range)
     for i in  range(total_batch):
